@@ -27,6 +27,7 @@ function tnwsc_deactivate()
 	}
 	$hook = "tnwsc_sync";
 	wp_clear_scheduled_hook( $hook );
+	wp_clear_scheduled_hook( $hook . '_single' );
 	
 }
 
@@ -224,3 +225,49 @@ function tnwsc_plugin_action_links( $links, $file ) {
 }
 add_filter( "plugin_action_links", 'tnwsc_plugin_action_links', 10, 2 );
 
+
+
+
+function tnwsc_process_single( $ID ) 
+{	
+
+	tnwsc_log('Request: tnwsc_process_single()');
+
+	$tnwsc_services = get_option( 'tnwsc_services' );
+	$tnwsc_debug = get_option( 'tnwsc_debug' );
+	//$tnwsc_debug = 0;
+	$permalink = get_permalink( $ID );
+	$debug_info = '';
+	$total_count = 0;
+	foreach( $tnwsc_services as $service_name => $enabled ) {
+		if( $enabled ) {
+			$count = tnwsc_get_count( $permalink, $service_name );
+			$total_count += $count;
+			$debug_info .= ' / '.$service_name." (".$count.")";
+			if($tnwsc_debug == 0) {
+				tnwsc_update_post_meta( $ID, $service_name, $count );
+			}
+		}
+	}
+	if($tnwsc_debug == 0){
+    tnwsc_update_post_meta( $ID, 'total', $total_count);
+    tnwsc_update_post_meta( $ID, 'updated_at', time() );
+  }
+	tnwsc_log("Request: ".$permalink. $debug_info); 
+}
+
+add_action( 'tnwsc_sync_single', 'tnwsc_process_single');
+
+function tnwsc_viewed_post( $ID )
+{
+  $sync_frequency = get_option( 'tnwsc_sync_frequency' );
+  $updated_at = get_post_meta($ID, 'tnwsc_updated_at', true);
+  if((time() - $updated_at) < $sync_frequency){
+    return;
+  }
+    
+  $hook = "tnwsc_sync_single";
+  wp_schedule_single_event( time() -1, $hook, array($ID) );
+}
+
+add_action('tnwsc_single_post', 'tnwsc_viewed_post');
