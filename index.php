@@ -165,6 +165,12 @@ function tnwsc_do_curl($url, $service)
 					$return = json_decode( $return, true );
 					$social_count = ( isset($return['result']['views'] ) ) ? $return['result']['views'] : 0;				  
 				break;
+
+				case 'pinterest':
+                      $return = preg_replace('/^receiveCount\((.*)\)$/', "\\1", $return);
+                      $return = json_decode($return, true );
+                      $social_count = ( isset( $return['count'] ) ) ? $return['count'] : 0;
+				break;
 			}
 		}
 	}
