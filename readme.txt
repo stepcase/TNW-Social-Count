@@ -16,3 +16,7 @@ After activating the plugin, just include the following snippet of code in your 
 				echo render_tnwsc_button();
 			} 
 		?>
+
+
+Need to do better migration for new social network support. For now, run this command manually to update the option: 
+`wp eval 'update_option('tnwsc_services', array('facebook' => 1, 'twitter' => 1, 'linkedin' => 1, 'google' => 1, 'stumbleupon' => 1, 'pinterest' => 1));'`
