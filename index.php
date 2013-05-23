@@ -282,3 +282,18 @@ function tnwsc_viewed_post( $ID )
 }
 
 add_action('tnwsc_single_post', 'tnwsc_viewed_post');
+
+function tnwsc_get_share_num( $ID )
+{
+	$social_networks = array('facebook', 'twitter', 'google', 'pinterest', 'stumbleupon');
+	$social_count = array();
+	foreach ( $social_networks as $social_network){
+		$share_num = get_post_meta( $ID , 'tnwsc_' . $social_network , true );
+		$social_count[$social_network] = ( !empty($share_num) ) ? shorten_num($share_num) : 0 ;
+	}
+	return $social_count;
+}
+
+
+
+
