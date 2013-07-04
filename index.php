@@ -97,16 +97,12 @@ function tnwsc_get_count( $permalink, $service )
 {
 	global $tnwsc_config;
 	
-	if( $service === 'google' ) {
-		return tnwsc_do_curl( $permalink, $service );
-	} else {
-		// If there are extra params in the url, append them to the permalink first
-		if( isset( $tnwsc_config['services'][$service]["params"] ) ) {
-			$permalink = sprintf( $tnwsc_config['services'][$service]["params"], $permalink );
-		}
-		$url = sprintf( $tnwsc_config['services'][$service]["url"], urlencode ( $permalink ) );
-		return tnwsc_do_curl( $url, $service );
+	// If there are extra params in the url, append them to the permalink first
+	if( isset( $tnwsc_config['services'][$service]["params"] ) ) {
+		$permalink = sprintf( $tnwsc_config['services'][$service]["params"], $permalink );
 	}
+	$url = sprintf( $tnwsc_config['services'][$service]["url"], urlencode ( $permalink ) );
+	return tnwsc_do_curl( $url, $service );
 }
 
 
