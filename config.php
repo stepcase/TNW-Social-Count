@@ -5,7 +5,7 @@ $tnwsc_config = array(
 		'facebook' => array('url' => "https://graph.facebook.com/fql?q=%s", 'params' => 'SELECT url,normalized_url,share_count,like_count,comment_count,total_count,click_count FROM link_stat WHERE url = "%s"'),
 		'twitter' => array('url' => "http://urls.api.twitter.com/1/urls/count.json?url=%s"),
 		'linkedin' => array('url' => "http://www.linkedin.com/countserv/count/share?url=%s"),
-		'google' => array('url' => "https://clients6.google.com/rpc"),
+		'google' => array('url' => "http://api.sharedcount.com/?url=%s"),
 		'stumbleupon' => array('url' => "http://www.stumbleupon.com/services/1.01/badge.getinfo?url=%s"),
 		'pinterest' => array('url' => "http://api.pinterest.com/v1/urls/count.json?callback=receiveCount&url=%s")
 	)

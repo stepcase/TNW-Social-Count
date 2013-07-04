@@ -115,63 +115,51 @@ function tnwsc_do_curl($url, $service)
 	global $tnwsc_config;
 	$social_count = 0;
 	
-	// Google+ is an special, hack-ish case
-	if( $service == 'google' ) 
-	{
-		// GET +1s. Credits to Tom Anthony: http://www.tomanthony.co.uk/blog/google_plus_one_button_seo_count_api/
-	    $curl = curl_init();
-	    curl_setopt( $curl, CURLOPT_URL, "https://clients6.google.com/rpc" );
-	    curl_setopt( $curl, CURLOPT_POST, 1 );
-	    curl_setopt( $curl, CURLOPT_POSTFIELDS, '[{"method":"pos.plusones.get","id":"p","params":{"nolog":true,"id":"' . $url . '","source":"widget","userId":"@viewer","groupId":"@self"},"jsonrpc":"2.0","key":"p","apiVersion":"v1"}]' );
-	    curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-	    curl_setopt( $curl, CURLOPT_HTTPHEADER, array( 'Content-type: application/json' ) );
-	    $curl_results = curl_exec ( $curl );
-	    curl_close ( $curl );
-	 
-	    $json = json_decode($curl_results, true);
-	    $social_count = intval( $json[0]['result']['metadata']['globalCounts']['count'] );
-    	
+    $ch = curl_init();
+    curl_setopt ($ch, CURLOPT_URL, $url);
+    curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+	$return = curl_exec( $ch );
+
+	if( curl_errno( $ch ) ) { 
+        $error = print_r( curl_error( $ch ), true );
+        // TODO: Notify curl errors via email or log files 
 	} else {
-	    $ch = curl_init();
-	    curl_setopt ($ch, CURLOPT_URL, $url);
-	    curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-		$return = curl_exec( $ch );
-	
-		if( curl_errno( $ch ) ) { 
-	        $error = print_r( curl_error( $ch ), true );
-	        // TODO: Notify curl errors via email or log files 
-		} else {
-			switch( $service ) {
-				case 'facebook':
-					$return = json_decode( $return, true );
-					$social_count = ( isset( $return['data'][0]['total_count'] ) ) ? $return['data'][0]['total_count'] : 0;
-					// TODO: Better handling of errors	
-					if( isset( $return['error'] ) ) { 
-						tnwsc_log( "Error ".$return["code"]." (".$return["type"].") - ".$return["message"] );
-					}
-				break;
-				
-				case 'twitter':
-					$return = json_decode( $return, true );
-					$social_count = ( isset($return['count'] ) ) ? $return['count'] : 0;
-				break;
-				
-				case 'linkedin':
-					$return = json_decode( str_replace( 'IN.Tags.Share.handleCount(', '', str_replace( ');', '', $return ) ), true );
-					$social_count = ( isset( $return['count'] ) ) ? $return['count'] : 0;
-				break;
+		switch( $service ) {
+			case 'facebook':
+				$return = json_decode( $return, true );
+				$social_count = ( isset( $return['data'][0]['total_count'] ) ) ? $return['data'][0]['total_count'] : 0;
+				// TODO: Better handling of errors	
+				if( isset( $return['error'] ) ) { 
+					tnwsc_log( "Error ".$return["code"]." (".$return["type"].") - ".$return["message"] );
+				}
+			break;
+			
+			case 'twitter':
+				$return = json_decode( $return, true );
+				$social_count = ( isset($return['count'] ) ) ? $return['count'] : 0;
+			break;
+			
+			case 'linkedin':
+				$return = json_decode( str_replace( 'IN.Tags.Share.handleCount(', '', str_replace( ');', '', $return ) ), true );
+				$social_count = ( isset( $return['count'] ) ) ? $return['count'] : 0;
+			break;
 
-				case 'stumbleupon':
-					$return = json_decode( $return, true );
-					$social_count = ( isset($return['result']['views'] ) ) ? $return['result']['views'] : 0;				  
-				break;
+			case 'stumbleupon':
+				$return = json_decode( $return, true );
+				$social_count = ( isset($return['result']['views'] ) ) ? $return['result']['views'] : 0;				  
+			break;
 
-				case 'pinterest':
-                      $return = preg_replace('/^receiveCount\((.*)\)$/', "\\1", $return);
-                      $return = json_decode($return, true );
-                      $social_count = ( isset( $return['count'] ) ) ? $return['count'] : 0;
-				break;
-			}
+			case 'pinterest':
+                  $return = preg_replace('/^receiveCount\((.*)\)$/', "\\1", $return);
+                  $return = json_decode($return, true );
+                  $social_count = ( isset( $return['count'] ) ) ? $return['count'] : 0;
+			break;
+
+			case 'google':
+                  $return = json_decode($return, true );
+                  $social_count = ( isset( $return['GooglePlusOne'] ) ) ? $return['GooglePlusOne'] : 0;
+			break;
+
 		}
 	}
 	return intval( $social_count );
