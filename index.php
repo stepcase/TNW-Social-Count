@@ -269,7 +269,9 @@ add_action('tnwsc_single_post', 'tnwsc_viewed_post');
 
 function tnwsc_get_share_num( $ID )
 {
-	$social_networks = array_keys(tnwsc_config['services']);
+	global $tnwsc_config;
+	
+	$social_networks = array_keys($tnwsc_config['services']);
 	$social_count = array();
 	foreach ( $social_networks as $social_network){
 		$share_num = get_post_meta( $ID , 'tnwsc_' . $social_network , true );
